@@ -1,0 +1,21 @@
+# @V1=https://apis.footloose.pe/mkp/api
+@V1=http://localhost:3000/api
+@AUTH={{V1}}/auth
+@TK=Bearer {{ACCESS.response.body.data}}
+
+###~###~###~###~###~### 
+# @name ACCESS
+POST {{AUTH}}/login
+
+{
+    "email": "raypacuri@gmail.com",
+    "password": "Aqp123" 
+}
+
+###~###~###~###~###~### 
+GET {{V1}}/prodcuts?&limit=1&page=1&key=id&operator=eq&value=[[5]]
+Authorization: {{TK}}
+
+###~###~###~###~###~### 
+GET {{V1}}/prodcuts?term=Kids Cybertruck Tee
+Authorization: {{TK}}
