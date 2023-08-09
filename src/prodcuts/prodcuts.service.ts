@@ -3,7 +3,7 @@ import { CreateProdcutDto } from './dto/create-prodcut.dto';
 import { UpdateProdcutDto } from './dto/update-prodcut.dto';
 import { Prodcut, ProductImage } from './entities'
 import { InjectConnection, InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Equal,  LessThan,  Like,  MoreThan,  Not,  Repository } from 'typeorm';
 import  PaginationDto  from '../common/dtos/pagination.dto';
 
 import { validate as isUUID } from 'uuid'
@@ -42,22 +42,32 @@ export class ProdcutsService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const where = (paginationDto.key as any)
-    ?.map((v, i) => ({ key: v, operator: [paginationDto.operator[i]], value: paginationDto.value[i] }))
-    .map(v => ({ [v.key]: { [v.operator]: v.value } }));
+  async findAll(pg: PaginationDto) {
+    // console.log(JSON.parse('{"price":LessThan(40),"stock":LessThan(3)}'))
+    console.log(JSON.stringify(pg))
 
-    console.log(JSON.stringify(paginationDto))
+    //* {"stock":{"_type":"equal","_value":"0","_useParameter":true,"_multipleParameters":false}}
+    let where = {
+      [pg.key]: (pg.operator == 'eq') && Equal(pg.value)
+      || (pg.operator == 'more') && MoreThan(pg.value)
+      || (pg.operator == 'less') && LessThan(pg.value)
+      // || (pg.operator == 'bet') && Between(pg.value.split(''))
+      || (pg.operator == 'not') && Not(pg.value)
+      || (pg.operator == 'like') && Like(pg.value)
+    }
 
-    // const { limit = 10, page = 1} = paginationDto;
-    // const total = await this.prodcutRepository.count();
-    // const prods =  await this.prodcutRepository.find({
-    //   take: limit,
-    //   skip: (page - 1) * limit,
-    //   relations: {
-    //     images: true
-    //   },
-    // });
+    !pg.operator && (where = {})
+
+    const { limit = 10, page = 1} = pg;
+    const total = await this.prodcutRepository.count({ where });
+    const prods =  await this.prodcutRepository.find({
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      relations: {
+        images: true
+      },
+    });
 
     //* Another way to do it
     // return prods.map( { images, ...detalle } => ({
@@ -65,13 +75,13 @@ export class ProdcutsService {
     //   images: images.map( image => image.url )
     // }))
 
-    // return {
-    //   rows: prods.map( product => ({
-    //     ...product,
-    //     images: product.images.map( image => image.url )
-    //   })),
-    //   total
-    // }
+    return {
+      rows: prods.map( product => ({
+        ...product,
+        images: product.images.map( image => image.url )
+      })),
+      total
+    }
   }
 
   async findOne(term: string) {

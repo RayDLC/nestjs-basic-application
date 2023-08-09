@@ -10,8 +10,8 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Prodcut } from './entities';
 import { encryptResponse } from 'src/utils/aes.utils';
 
-@ApiTags('Products')
 @ApiBearerAuth()
+@ApiTags('Products')
 @Controller('prodcuts')
 export class ProdcutsController {
   constructor(private readonly prodcutsService: ProdcutsService) {}

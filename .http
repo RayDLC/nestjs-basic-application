@@ -13,9 +13,9 @@ POST {{AUTH}}/login
 }
 
 ###~###~###~###~###~### 
-GET {{V1}}/prodcuts?&limit=1&page=1&key=id&operator=eq&value=[[5]]
+GET {{V1}}/prodcuts?limit=20&page=1&key=id&value=67fae17d-b81a-4fe9-962f-bd9d14ebb133&operator=eq
 Authorization: {{TK}}
 
 ###~###~###~###~###~### 
-GET {{V1}}/prodcuts?term=Kids Cybertruck Tee
+GET {{V1}}/prodcuts
 Authorization: {{TK}}

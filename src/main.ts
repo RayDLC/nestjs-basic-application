@@ -25,7 +25,7 @@ async function bootstrap() {
       }),
     )
     .useGlobalFilters(new AllExceptionFilter())
-    .useGlobalInterceptors(new HttpInterceptor())
+    // .useGlobalInterceptors(new HttpInterceptor())
     .disable('x-powered-by')
     .disable('etag');
 
