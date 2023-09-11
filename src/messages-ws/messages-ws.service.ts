@@ -21,7 +21,6 @@ export class MessagesWsService {
     ) {}
 
     async registerClient(client: Socket, userId: string) {
-       //  console.log(client, userId)
         const user = await this.userRepository.findOneBy({id: userId});
         if(!user) throw new Error('User not found');
         if(!user.isActive) throw new Error('User is not active');
@@ -39,7 +38,6 @@ export class MessagesWsService {
     }
 
     getConnectedClients(): string[] {
-        // console.log(this.connectectedClients)
         return Object.keys(this.connectectedClients);
     }
 

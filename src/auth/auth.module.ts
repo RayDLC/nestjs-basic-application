@@ -12,25 +12,18 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, ConfigService],
   imports: [
-    // ConfigService,
     TypeOrmModule.forFeature([User]), 
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: ( configService: ConfigService ) => {
-        // console.log('JWT_SECRET: ', configService.get('JWT_SECRET'))
-        // console.log('JWT_SECRET: ', process.env.JWT_SECRET)
         return {
           secret: configService.get('JWT_SECRET'),
           signOptions: { expiresIn: '2h' },
         }
       }
     })
-    // JwtModule.register({
-    //   secret: process.env.JWT_SECRET,
-    //   signOptions: { expiresIn: '2h' },
-    // }),
   ],
   
   exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],

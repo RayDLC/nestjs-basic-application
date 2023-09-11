@@ -36,8 +36,7 @@ export class AuthService {
         ...user,
         token: this.getJwtToken({ id: user.id })
       };
-      // TODO Retornar el JWT del usuario
-      
+            
     } catch (error) {
       this.handleDBError(error);
     }
@@ -88,9 +87,6 @@ export class AuthService {
 
   private handleDBError(error: any): never {
     if(error.code === '23505') throw new BadRequestException(error.detail);
-
-    console.log(error)
-
     throw new InternalServerErrorException('Please check server logs');
   }
 

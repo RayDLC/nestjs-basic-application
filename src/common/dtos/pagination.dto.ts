@@ -21,20 +21,15 @@ export default class PaginationDto {
     page? : number;
 
     @IsOptional()
+    // @Transform(({ value }) => value?.split(',') ?? value)
     key?: string;
 
     @IsOptional()
+    // @Transform(({ value }) => value?.split(',') ?? value)
     operator?: string;
 
     @IsOptional()
-    value?: string | number;
+    // @Transform(({ value }) => JSON.parse(value ?? '{}'))
+    value?: string;
 
-    // @IsOptional()
-    // // @Transform( ({value}) => JSON.parse(value || '{}'))
-    // filter?: Filter;
 }
-
-// export class Filter {
-//     key: string;
-//     value: string | number;
-// }

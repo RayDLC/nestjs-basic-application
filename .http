@@ -9,13 +9,30 @@ POST {{AUTH}}/login
 
 {
     "email": "raypacuri@gmail.com",
-    "password": "Aqp123" 
+    "password": "Aqp123"
+}
+
+###~###~###~###~###~###
+POST {{AUTH}}/signup
+
+{
+    "fullName": "Ray Pacuri",
+    "email": "raypacuri2@gmai.com",
+    "password": "Aqp123"
 }
 
 ###~###~###~###~###~### 
-GET {{V1}}/prodcuts?limit=20&page=1&key=id&value=67fae17d-b81a-4fe9-962f-bd9d14ebb133&operator=eq
+GET {{V1}}/prodcuts?limit=1&page=1&key=gender&operator=eq&value=["unisex"]
+# GET {{V1}}/prodcuts?limit=1&page=1&key=id,gender&operator=eq,eq&value=[1,"woman"]
 Authorization: {{TK}}
 
 ###~###~###~###~###~### 
 GET {{V1}}/prodcuts
 Authorization: {{TK}}
+
+###~###~###~###~###~### 
+GET {{V1}}/prodcuts/file
+Authorization: {{TK}}
+
+###~###~###~###~###~###
+DELETE {{V1}}/prodcuts/5ebf602f-1c67-4eb4-985a-0670147189c9

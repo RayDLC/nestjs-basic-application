@@ -8,6 +8,7 @@ import  PaginationDto  from '../common/dtos/pagination.dto';
 
 import { validate as isUUID } from 'uuid'
 import { User } from '../auth/entities/user.entity';
+import { createFilter } from 'src/common/utils/filter.util';
 
 @Injectable()
 export class ProdcutsService {
@@ -17,10 +18,10 @@ export class ProdcutsService {
   constructor(
 
     @InjectRepository(Prodcut)
-    private readonly prodcutRepository: Repository<Prodcut>,
+    private readonly productRepo: Repository<Prodcut>,
 
     @InjectRepository(ProductImage)
-    private readonly productImageRepository: Repository<ProductImage>,
+    private readonly productImageRepo: Repository<ProductImage>,
 
     private readonly dataSource: DataSource,
 
@@ -30,12 +31,12 @@ export class ProdcutsService {
     try {
       const { images = [], ...productDetails } = createProdcutDto;
 
-      const prodcut = this.prodcutRepository.create({
+      const prodcut = this.productRepo.create({
         ...productDetails,
-         images: images.map( image => this.productImageRepository.create({ url: image })),
+         images: images.map( image => this.productImageRepo.create({ url: image })),
          user: user
       });
-      await this.prodcutRepository.save(prodcut);
+      await this.productRepo.save(prodcut);
       return {...prodcut, images};
     } catch (error) {
       this.handleDBException(error);
@@ -43,24 +44,11 @@ export class ProdcutsService {
   }
 
   async findAll(pg: PaginationDto) {
-    // console.log(JSON.parse('{"price":LessThan(40),"stock":LessThan(3)}'))
-    console.log(JSON.stringify(pg))
-
-    //* {"stock":{"_type":"equal","_value":"0","_useParameter":true,"_multipleParameters":false}}
-    let where = {
-      [pg.key]: (pg.operator == 'eq') && Equal(pg.value)
-      || (pg.operator == 'more') && MoreThan(pg.value)
-      || (pg.operator == 'less') && LessThan(pg.value)
-      // || (pg.operator == 'bet') && Between(pg.value.split(''))
-      || (pg.operator == 'not') && Not(pg.value)
-      || (pg.operator == 'like') && Like(pg.value)
-    }
-
-    !pg.operator && (where = {})
-
     const { limit = 10, page = 1} = pg;
-    const total = await this.prodcutRepository.count({ where });
-    const prods =  await this.prodcutRepository.find({
+    const where = createFilter(pg);
+
+    const total = await this.productRepo.count({ where });
+    const rows =  await this.productRepo.find({
       where,
       take: limit,
       skip: (page - 1) * limit,
@@ -68,58 +56,13 @@ export class ProdcutsService {
         images: true
       },
     });
-
-    //* Another way to do it
-    // return prods.map( { images, ...detalle } => ({
-    //   ...detalle,
-    //   images: images.map( image => image.url )
-    // }))
-
-    return {
-      rows: prods.map( product => ({
-        ...product,
-        images: product.images.map( image => image.url )
-      })),
-      total
-    }
-  }
-
-  async findOne(term: string) {
-
-    let prodcut: Prodcut;
-
-    if(isUUID(term)){
-      prodcut = await this.prodcutRepository.findOneBy({ id: term });
-    } else {
-      // prodcut = await this.prodcutRepository.findOneBy({ slug: term });
-      const query = this.prodcutRepository.createQueryBuilder('prod');
-      prodcut = await query.where(`UPPER(title) = :title or slug = :slug`, {
-        title: term.toUpperCase(),
-        slug: term.toLowerCase(),
-      })
-      .leftJoinAndSelect('prod.images', 'prodImages')
-      .getOne();
-    }
-
-    if(!prodcut) throw new NotFoundException(`Product with value ${term} not found`);
-    
-    return prodcut;
-  }
-
-  async findOnePlain(term: string) {
-    const {images = [], ...rest} = await this.findOne(term);
-    return {
-      ...rest,
-      images: images.map( image => image.url )
-    }
+    return { rows, total }
   }
 
   async update(id: string, updateProdcutDto: UpdateProdcutDto, user: User) {
 
     const { images, ...toUpdate } = updateProdcutDto;
-
-    const product = await this.prodcutRepository.preload({ id, ...toUpdate})
-
+    const product = await this.productRepo.preload({ id, ...toUpdate})
     if(!product) throw new NotFoundException(`Product with id ${id} not found`);
 
     //* Create query runner
@@ -132,18 +75,15 @@ export class ProdcutsService {
       if(images) {
         await queryRunner.manager.delete(ProductImage, { product: { id } });
         product.images = images.map( 
-          image => this.productImageRepository.create({ url: image }) )
+          image => this.productImageRepo.create({ url: image }) )
       }
-      // else {
-      //   product.images = await this.productImageRepository.findBy()
-      // }
-      // await this.prodcutRepository.save(product);
+
       product.user = user;
       await queryRunner.manager.save(product);
       await queryRunner.commitTransaction();
       await queryRunner.release();
 
-      return this.findOnePlain(id);
+      return this.productRepo.findOneBy({ id });
     } catch (error) {
 
       await queryRunner.rollbackTransaction();
@@ -156,14 +96,13 @@ export class ProdcutsService {
   }
 
   async remove(id: string) {
-
-    const prodcut = await this.findOne(id);    
-    await this.prodcutRepository.remove(prodcut);
+    const prodcut = await this.productRepo.findOne({ where: { id } });    
+    await this.productRepo.remove(prodcut);
     return `Product with the id #${id} deleted`;
   }
 
   async deleteAllProducts() {
-    const query = this.prodcutRepository.createQueryBuilder('prod');
+    const query = this.productRepo.createQueryBuilder('prod');
 
     try {
       return await query.delete().where({}).execute();

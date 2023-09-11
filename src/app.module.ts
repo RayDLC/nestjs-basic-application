@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -11,11 +11,13 @@ import { SeedModule } from './seed/seed.module';
 import { FilesModule } from './files/files.module';
 import { CommonModule } from './common/common.module';
 import { MessagesWsModule } from './messages-ws/messages-ws.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot(),
-
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -24,13 +26,22 @@ import { MessagesWsModule } from './messages-ws/messages-ws.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: true,
+      // synchronize: true,
+      logging: true,
     }),
-
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
-
+    CacheModule.registerAsync({
+      useFactory: () => ({
+        isGlobal: true,
+        store: redisStore,
+        host: process.env.REDIS_HOST,
+        port: +process.env.REDIS_PORT,
+        password: process.env.REDIS_PASSWORD,
+        // ttl: ,
+      }),
+    }),
     AuthModule,
     SeedModule,
     ProdcutsModule,
@@ -38,11 +49,6 @@ import { MessagesWsModule } from './messages-ws/messages-ws.module';
     CommonModule,
     MessagesWsModule,
   ],
-  providers: [
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: EncryptionInterceptor,
-    // },
-  ],
+  providers: [],
 })
 export class AppModule {}
