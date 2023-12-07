@@ -52,10 +52,7 @@ export class AuthService {
     if(!user) throw new UnauthorizedException('Invalid credentials (email)');
     if(!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Invalid credentials (password)');
 
-    return {
-      // ...user,
-      token: this.getJwtToken({ id: user.id })
-    };
+    return this.getJwtToken({ id: user.id, email })
   }
 
   checkAuthStatus(user: User) {
@@ -78,12 +75,7 @@ export class AuthService {
     }
   }
 
-  private getJwtToken(payload: JwtPayload) {
-
-    const token = this.jwtService.sign(payload);
-    return token;
-
-  }
+  private getJwtToken = (payload: JwtPayload): string => this.jwtService.sign(payload);
 
   private handleDBError(error: any): never {
     if(error.code === '23505') throw new BadRequestException(error.detail);

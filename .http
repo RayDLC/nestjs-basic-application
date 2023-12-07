@@ -1,4 +1,3 @@
-# @V1=https://apis.footloose.pe/mkp/api
 @V1=http://localhost:3000/api
 @AUTH={{V1}}/auth
 @TK=Bearer {{ACCESS.response.body.data}}
@@ -22,8 +21,7 @@ POST {{AUTH}}/signup
 }
 
 ###~###~###~###~###~### 
-GET {{V1}}/prodcuts?limit=1&page=1&key=gender&operator=eq&value=["unisex"]
-# GET {{V1}}/prodcuts?limit=1&page=1&key=id,gender&operator=eq,eq&value=[1,"woman"]
+GET {{V1}}/prodcuts?limit=1&page=1&key=id&operator=eq&value=["5871eb48-7e38-44b6-84b5-8af7b4ab1fde"]
 Authorization: {{TK}}
 
 ###~###~###~###~###~### 
@@ -31,8 +29,34 @@ GET {{V1}}/prodcuts
 Authorization: {{TK}}
 
 ###~###~###~###~###~### 
+POST {{V1}}/prodcuts
+Authorization: {{TK}}
+
+{
+    "title": "Producto de prueba",
+    "price": 120.99,
+    "description": "Descripcion de prueba",
+    "stock": 99,
+    "sizes": ["S", "M", "L"],
+    "gender": "unisex",
+    "tags": ["tag1", "tag2"]
+}
+
+###~###~###~###~###~### 
 GET {{V1}}/prodcuts/file
 Authorization: {{TK}}
 
 ###~###~###~###~###~###
 DELETE {{V1}}/prodcuts/5ebf602f-1c67-4eb4-985a-0670147189c9
+
+###~###~###~###~###~###
+GET {{V1}}/prodcuts/test-microservice-1
+Authorization: {{TK}}
+
+###~###~###~###~###~###
+GET {{V1}}/prodcuts/test-microservice-2
+Authorization: {{TK}}
+
+###~###~###~###~###~###
+GET {{V1}}/prodcuts/test-google-maps
+Authorization: {{TK}}

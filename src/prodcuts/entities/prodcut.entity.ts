@@ -55,7 +55,6 @@ export class Prodcut {
         (productImage) => productImage.product,
         {cascade: true, eager: true}
     )
-    @Transform(({ value }) => (value.map((image: ProductImage) => image.url )))
     images?: ProductImage[];
 
     @ManyToOne(
@@ -63,7 +62,6 @@ export class Prodcut {
         (user) => user.product,
         {eager: true}
     )
-    @Transform(({ value }) => ({ id: value.id, fullName: value.fullName }))
     user: User;
 
     @BeforeInsert()

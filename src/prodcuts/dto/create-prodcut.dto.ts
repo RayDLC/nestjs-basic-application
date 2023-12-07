@@ -3,32 +3,33 @@ import { IsArray, IsIn, IsInt, IsNumber, IsOptional, IsPositive, IsString, MinLe
 
 export class CreateProdcutDto {
 
+    // @Transform(({ value }) => value.toUpperCase())
     @ApiProperty()
     @IsString()
     @MinLength(1)
-    title?: string;
+    title?: string = '';
 
     @ApiProperty()
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    price?: number;
+    price?: number = 0;
 
     @ApiProperty()
     @IsString()
     @IsOptional()
-    description?: string;
+    description?: string = '';
 
     @ApiProperty()
     @IsString()
     @IsOptional()
-    slug?: string;
+    slug?: string = '';
 
     @ApiProperty()
     @IsInt()
     @IsPositive()
     @IsOptional()
-    stock?: number;
+    stock?: number = 0;
 
     @ApiProperty()
     @IsString({ each: true })
@@ -50,5 +51,5 @@ export class CreateProdcutDto {
     @IsString({ each: true })
     @IsArray()
     @IsOptional()
-    images?: string[];
+    images?: string[] = [];
 }

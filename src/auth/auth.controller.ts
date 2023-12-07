@@ -5,6 +5,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { GetUser, Auth } from './decorators';
 import { User } from './entities/user.entity';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from './guards/no-jwt.guard';
  
 @ApiTags('Auth')
 @Controller('auth')
@@ -17,6 +18,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
   }

@@ -2,19 +2,19 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger, 
 import { CreateProdcutDto } from './dto/create-prodcut.dto';
 import { UpdateProdcutDto } from './dto/update-prodcut.dto';
 import { Prodcut, ProductImage } from './entities'
-import { InjectConnection, InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, Equal,  LessThan,  Like,  MoreThan,  Not,  Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import  PaginationDto  from '../common/dtos/pagination.dto';
 
-import { validate as isUUID } from 'uuid'
 import { User } from '../auth/entities/user.entity';
 import { createFilter } from 'src/common/utils/filter.util';
+import { Client } from 'basic-ftp';
+
 
 @Injectable()
 export class ProdcutsService {
 
-  private readonly logger = new Logger('ProductsService')
-
+  private readonly logger = new Logger('ProductsService');
   constructor(
 
     @InjectRepository(Prodcut)
@@ -24,30 +24,23 @@ export class ProdcutsService {
     private readonly productImageRepo: Repository<ProductImage>,
 
     private readonly dataSource: DataSource,
-
-  ) {}
-
-  async create(createProdcutDto: CreateProdcutDto, user: User) {
-    try {
-      const { images = [], ...productDetails } = createProdcutDto;
-
-      const prodcut = this.productRepo.create({
-        ...productDetails,
-         images: images.map( image => this.productImageRepo.create({ url: image })),
-         user: user
-      });
-      await this.productRepo.save(prodcut);
-      return {...prodcut, images};
-    } catch (error) {
-      this.handleDBException(error);
-    }
+   
+  ) {
   }
 
-  async findAll(pg: PaginationDto) {
-    const { limit = 10, page = 1} = pg;
-    const where = createFilter(pg);
+  async postProduct(createProdcutDto: CreateProdcutDto, user: User) {
+    const { images = [], ...productDetails } = createProdcutDto;
+    return this.productRepo.create({
+      ...productDetails,
+       images: images.map( image => this.productImageRepo.create({ url: image })),
+       user: user
+    });
+  }
 
-    const total = await this.productRepo.count({ where });
+  async getProducts(pg: PaginationDto) {
+    const { limit = 10, page = 1} = pg;    
+    const where = createFilter(pg);    
+    const total = await this.productRepo.count({ where });    
     const rows =  await this.productRepo.find({
       where,
       take: limit,
@@ -77,21 +70,15 @@ export class ProdcutsService {
         product.images = images.map( 
           image => this.productImageRepo.create({ url: image }) )
       }
-
       product.user = user;
       await queryRunner.manager.save(product);
       await queryRunner.commitTransaction();
       await queryRunner.release();
-
       return this.productRepo.findOneBy({ id });
     } catch (error) {
-
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
-
-      this.handleDBException(error);
     }
-
     return product;
   }
 
@@ -103,21 +90,7 @@ export class ProdcutsService {
 
   async deleteAllProducts() {
     const query = this.productRepo.createQueryBuilder('prod');
-
-    try {
-      return await query.delete().where({}).execute();
-    } catch (error) {
-      this.handleDBException(error);
-    }
+    return await query.delete().where({}).execute();
   }
 
-  private handleDBException(error: any) {
-    if (error.code === '23505') {
-      throw new BadRequestException(error.detail);
-    }
-    this.logger.error(error);
-    throw new InternalServerErrorException(
-      'Unexpected server error, check logs',
-    );
-  }
 }

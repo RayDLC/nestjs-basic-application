@@ -17,19 +17,19 @@ export class ProdcutsController {
   ) {}
 
   @Post()
-  @ApiResponse({ status: 201, description: 'Product was created', type: Prodcut})
-  @ApiResponse({ status: 400, description: 'Bad request'})
-  @ApiResponse({ status: 403, description: 'Forbidden. Token related'})
-  create(
+  @ApiResponse({ status: 201, description: 'Product was created', type: Prodcut })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 403, description: 'Forbidden. Token related' })
+  postProduct(
     @Body() createProdcutDto: CreateProdcutDto,
     @GetUser() user: User 
   ) {
-    return this.prodcutsService.create(createProdcutDto, user);
+    return this.prodcutsService.postProduct(createProdcutDto, user);
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.prodcutsService.findAll(paginationDto);
+  getProducts(@Query() paginationDto: PaginationDto) {
+    return this.prodcutsService.getProducts(paginationDto);
   }
 
   @Patch(':id')

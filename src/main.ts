@@ -1,10 +1,11 @@
-import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor, Logger, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AllExceptionFilter } from './common/http-exceptions.filter';
+import { HttpInterceptor } from './common/interceptors/http.interceptor';
+import { AllExceptionFilter } from './common/interceptors/http-exceptions.interceptor';
 
 async function bootstrap() {
 
@@ -15,24 +16,25 @@ async function bootstrap() {
 
   app.enableCors({ origin: '*' });
   app
-    .setGlobalPrefix('api')
+    .setGlobalPrefix('api') // localhost:3000/api
     .useGlobalPipes(new ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
         transformOptions: { enableImplicitConversion: true },
       }),
     )
-    .useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+    // .useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
     .useGlobalFilters(new AllExceptionFilter())
+    .useGlobalInterceptors(new HttpInterceptor())
     .disable('x-powered-by')
     .disable('etag');
 
   const config = new DocumentBuilder()
-    .addBearerAuth()
     .setTitle(APP_NAME)
     .setDescription('Teslo shop endpoints')
     .setVersion('1.0')
-    .build();
+    .addBearerAuth()
+    .build()
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {

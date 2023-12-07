@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, VirtualColumn } from "typeorm";
 import { Prodcut } from "./prodcut.entity";
 
 
@@ -11,6 +11,6 @@ export class ProductImage {
     @Column('text')
     url: string;
 
-    @ManyToOne(() => Prodcut, (product) => product.images, {onDelete: 'CASCADE'})
+    @ManyToOne(() => Prodcut, (product) => product.images, { onDelete: 'CASCADE' })
     product: Prodcut;
 }
